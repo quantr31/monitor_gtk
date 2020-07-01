@@ -74,7 +74,6 @@
           <object class="GtkLabel" id="lbl_light">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">label</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -95,7 +94,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="btn">
+          <object class="GtkButton" id="btn_read">
             <property name="label" translatable="yes">Read</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -109,7 +108,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton">
+          <object class="GtkButton" id="btn_count">
             <property name="label" translatable="yes">Start counting</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -120,6 +119,32 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="btn_light">
+            <property name="label" translatable="yes">Light on </property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <signal name="clicked" handler="on_btn_light_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lbl_contact">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">No contact</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">9</property>
           </packing>
         </child>
       </object>
