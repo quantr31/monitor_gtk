@@ -13,12 +13,14 @@ WARN=-Wall
 PTHREAD=-pthread
 
 CCFLAGS=$(DEBUG) $(OPT) $(WARN) $(PTHREAD) -pipe
+CCFLAGS+=`pkg-config --cflags libmodbus`
 
 GTKLIB=`pkg-config --cflags --libs gtk+-3.0`
 
 # linker
 LD=gcc
 LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic
+LDFLAGS+=`pkg-config --libs libmodbus`
 
 OBJS=    main.o
 

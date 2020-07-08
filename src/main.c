@@ -16,9 +16,20 @@
 #include <bcm2835.h>
 #include <glib.h>
 
+#include <unistd.h>
+#include <modbus.h>
+#include <stdio.h>
+#include <errno.h>
+
+//declaration for MODBUS RTU unit
+#define SERVER_ID 1
+const uint8_t req[] = {0x01, 0x04, 0x00, 0x00, 0x00, 0x02, 0x71, 0xCB};
+uint8_t req_length;
+
 //LED output pin 
 #define PIN_OUT RPI_GPIO_P1_11
 #define PIN_IN RPI_GPIO_P1_15
+
 //mutex lock to protect access to memory when threading
 GMutex mutex_lock_1;
 GMutex mutex_lock_2;
@@ -33,11 +44,14 @@ typedef struct {
     GtkWidget *input_hrs;
     GtkWidget *input_mnt;
     GtkWidget *input_sec;
-
-    signed int hrs;
-    signed int mnt;
-    signed int sec;
-    signed int data;
+    //clock var
+    int16_t hrs;
+    int16_t mnt;
+    int16_t sec;
+    int16_t data;
+    //sensor var
+    uint8_t *rsp;
+    
 } app_widgets;
 
 //real clock testing
@@ -135,6 +149,9 @@ gboolean update_func(app_widgets *widgets)
     return TRUE;
 }
 ********/
+/************************************
+ * handler when pin 15 is pulled up
+ * **********************************/
 gboolean display_dry_contact(app_widgets *widgets)
 {
     g_mutex_lock(&mutex_lock_2);
@@ -145,7 +162,9 @@ gboolean display_dry_contact(app_widgets *widgets)
     g_mutex_unlock(&mutex_lock_2);
     return TRUE;
 }
-
+/**************************************
+ * handler when pin 15 is pulled down
+ * ***********************************/
 gboolean display_dry_contact_1(app_widgets *widgets)
 {
     g_mutex_lock(&mutex_lock_2);
@@ -157,6 +176,8 @@ gboolean display_dry_contact_1(app_widgets *widgets)
     return TRUE;
 }
 
+//this function is one of the main thread to check for dry contact, normally pin 15 is pulled up
+//, if it's pulled to GND then other function will be called
 void check_dry_contact(app_widgets *widgets)
 {
     // Set RPI pin P1-15 to be an input
@@ -178,6 +199,42 @@ void check_dry_contact(app_widgets *widgets)
             while(gtk_events_pending()){gtk_main_iteration();}
     }
     bcm2835_close();
+}
+
+//this function is one of the main thread to send a query to modbus sensor compliant with datasheet, then the 
+//sensor will return an array of data to read and update in app_widgets structure
+//and ready for further processing
+int read_modbus_sensor(app_widgets *widgets)
+{
+    modbus_t *ctx;
+    //allocate memory for sensor reading
+    widgets->rsp = (uint8_t*) malloc(MODBUS_RTU_MAX_ADU_LENGTH * sizeof(uint8_t));
+    memset(widgets->rsp, 0, MODBUS_RTU_MAX_ADU_LENGTH * sizeof(uint8_t));
+    //create new connect to RTU
+    ctx = modbus_new_rtu("/dev/ttyUSB0", 9600, 'N', 8, 1);
+    modbus_set_slave(ctx, SERVER_ID);
+    
+    if (modbus_connect(ctx) == -1) {
+        printf("Connection failed: %s\n",
+        modbus_strerror(errno));
+        modbus_free(ctx);
+        return -1;
+		}
+		else 
+        {printf("Connection succeeded\n");}
+        
+    req_length = modbus_send_raw_request(ctx, req, 8*sizeof(uint8_t));
+    if(req_length < 0) {printf("read failed :(\n");}
+	modbus_receive_confirmation(ctx, widgets->rsp);
+	for(int i = 0; i<10;i++)
+		{
+			printf("%x\n", widgets->rsp[i]);
+        }
+			
+		free(widgets->rsp);
+		modbus_close(ctx);
+		modbus_free(ctx);
+        return 0;
 }
 
 /*********************
@@ -208,17 +265,15 @@ int main(int argc, char *argv[])
     
     //init bcm2835 lib
     if(!bcm2835_init())
-    return 1
-    ;
-    //init GPIO thread
+    return 1;
     
-    //test thread
-    //g_thread_new(NULL, (GThreadFunc)LED_control, (app_widgets*) widgets);
+    //thread to check dry contact
     g_thread_new(NULL, (GThreadFunc)check_dry_contact, (app_widgets*) widgets);
+    //thread to read modbus sensor 
+    g_thread_new(NULL, (GThreadFunc)read_modbus_sensor, (app_widgets*) widgets);
     
     gtk_init(&argc, &argv);
     builder = gtk_builder_new_from_file("glade/window_main.glade");
-
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
     gtk_widget_set_size_request(GTK_WIDGET(window), 1920, 1080);
     
@@ -229,14 +284,11 @@ int main(int argc, char *argv[])
     widgets->clock_lbl = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_clock"));
     widgets->light_lbl = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_light"));
     widgets->contact_lbl = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_contact"));
-    //widgets->data = 60;
 
     gtk_builder_connect_signals(builder, widgets);
     g_object_unref(builder);
-
     gtk_widget_show(window);
 
-    //enter thread
     gtk_main();
     g_slice_free(app_widgets, widgets);
     return 0;
