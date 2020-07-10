@@ -22,13 +22,16 @@ LD=gcc
 LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic
 LDFLAGS+=`pkg-config --libs libmodbus`
 
-OBJS=    main.o
+OBJS=    main.o gz_clk.o
 
 all: $(OBJS)
-	$(LD) -o $(TARGET) $(OBJS) -lbcm2835 $(LDFLAGS)
+	$(LD) -o $(TARGET) $(OBJS) -lbcm2835 -lrt $(LDFLAGS)
     
 main.o: src/main.c
 	$(CC) -c $(CCFLAGS) src/main.c $(GTKLIB) -o main.o
+
+gz_clk.o: src/gz_clk.c src/gz_clk.h
+	gcc -c src/gz_clk.c
     
 clean:
 	rm -f *.o $(TARGET)
