@@ -1,5 +1,6 @@
 #include "spi.h"
 
+
 static void writeReset(int fd)
 {
 	int ret;

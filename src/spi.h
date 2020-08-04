@@ -1,5 +1,7 @@
 #ifndef __SPI_H_
 #define __SPI_H_
+#include <stdint.h>
+#include <stdlib.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
