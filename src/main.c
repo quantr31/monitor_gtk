@@ -35,8 +35,8 @@ static const char *ADC_SPI = "/dev/spidev0.0";
 
 static uint8_t mode = SPI_CPHA | SPI_CPOL;
 static uint8_t bits = 8;
-static uint32_t speed = 5;
-static uint16_t delay = 10;
+static uint8_t speed = 5;
+static uint8_t delay = 10;
 
 static void writeReset(int fd);
 static void writeReg(int fd, uint8_t v);
@@ -55,6 +55,8 @@ uint8_t req_length;
 //mutex lock to protect access to memory when threading
 GMutex mutex_lock_1;
 GMutex mutex_lock_2;
+GMutex mutex_lock_3;
+GMutex mutex_lock_4;
 uint8_t is_contact;
 
 //widgets struct
@@ -79,10 +81,11 @@ typedef struct {
     GtkWidget *btn3;
     GtkWidget *btn4;
     
-    GtkWidget *btn_temp_up;
-    GtkWidget *btn_temp_down;
-    GtkWidget *btn_hu_up;
-    GtkWidget *btn_hu_down;
+    GtkWidget *spin_temp;
+    GtkWidget *spin_hu;
+    
+    GtkWidget *lbl_real_temp;
+    GtkWidget *lbl_real_hu;
     //page 1
     GtkWidget *btn_op_start;
     GtkWidget *btn_an_start;
@@ -103,18 +106,22 @@ typedef struct {
     GtkWidget *btn_run_shut;
     
     //clock var
-    int16_t op_hrs;
-    int16_t op_mnt;
-    int16_t op_sec;
-    int16_t an_hrs;
-    int16_t an_mnt;
-    int16_t an_sec;
-    int16_t data;
+    int8_t op_hrs;
+    int8_t op_mnt;
+    int8_t op_sec;
+    int8_t an_hrs;
+    int8_t an_mnt;
+    int8_t an_sec;
+    int8_t data;
     //sensor var
     uint8_t *rsp;
+    uint16_t temp;
+    uint16_t humid;
     //adc var
     uint16_t adc_val;
-    
+    //adjust temp&humidity
+    uint8_t adj_temp;
+    uint8_t adj_hu;
 } app_widgets;
 
 static void pabort(const char *s)
@@ -123,45 +130,55 @@ static void pabort(const char *s)
 	abort();
 }
 
-/**************count down timer***********/
+//this function is one of the main thread to send a query to modbus sensor compliant with datasheet, then the 
+//sensor will return an array of data to read and update in app_widgets structure
+//and ready for further processing
+int read_modbus_sensor(app_widgets *widgets)
+{
+    modbus_t *ctx;
+    //allocate memory for sensor reading
+    widgets->rsp = (uint8_t*) malloc(MODBUS_RTU_MAX_ADU_LENGTH * sizeof(uint8_t));
+    memset(widgets->rsp, 0, MODBUS_RTU_MAX_ADU_LENGTH * sizeof(uint8_t));
+    //create new connect to RTU
+    ctx = modbus_new_rtu("/dev/ttyUSB0", 9600, 'N', 8, 1);
+    modbus_set_slave(ctx, SERVER_ID);
+    
+    if (modbus_connect(ctx) == -1) {
+        printf("Connection failed: %s\n",
+        modbus_strerror(errno));
+        modbus_free(ctx);
+        return -1;
+		}
+		else 
+        {printf("Connection succeeded\n");}
+        
+    req_length = modbus_send_raw_request(ctx, req, 8*sizeof(uint8_t));
+    if(req_length < 0) {printf("read failed :(\n");}
+	modbus_receive_confirmation(ctx, widgets->rsp);
+	widgets->temp = ((widgets->rsp[3]<<8)|widgets->rsp[4]);
+	widgets->humid = ((widgets->rsp[5]<<8)|widgets->rsp[6]);	
+	    free(widgets->rsp);
+	    modbus_close(ctx);
+	    modbus_free(ctx);
+        return 0;
+}
+
+/**************normal clock **********/
 gboolean clock_timer(app_widgets *widgets)
 {
     GDateTime *date_time;
+    gchar *dmy_format;
     gchar *dt_format;
     
     date_time = g_date_time_new_now_local();
+    dmy_format = g_date_time_format(date_time, "%d %b %y");
     dt_format = g_date_time_format(date_time, "%H:%M:%S");
-    //gtk_label_set_text(GTK_LABEL(widgets->clock_lbl), dt_format);
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_date), dmy_format);
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_time), dt_format);
     g_free(dt_format);
-    
+    g_free(dmy_format);
     return TRUE;
     }
-
-//callback function to countdown the clock
-gboolean countdown(app_widgets *widgets)
-{
-    widgets->op_sec--;
-    if(widgets->op_sec < 0) 
-        {
-            widgets->op_sec = 59;
-            widgets->op_mnt--;
-            if(widgets->op_mnt < 0)
-            {
-                widgets->op_mnt = 59;
-                widgets->op_hrs--;
-                }
-            }
-    gchar *count = g_strdup_printf("%d : %d : %d", widgets->op_hrs, widgets->op_mnt, widgets->op_sec);
-    //gtk_label_set_text(GTK_LABEL(widgets->timer_lbl), count);
-    g_free(count);
-    if((widgets->op_hrs == 0)&&(widgets->op_mnt == 0) && (widgets->op_sec == 0)) {return 0;}
-    else return 1;
-    }
-
-void on_btn_count_clicked(GtkButton *button, app_widgets *widgets)
-{
-    g_timeout_add_seconds(1, (GSourceFunc)countdown, widgets);
-}
 
 void relay1_control(app_widgets *widgets)
 {
@@ -205,7 +222,7 @@ gboolean display_dry_contact_1(app_widgets *widgets)
 }
 
 //this function is one of the main thread to check for dry contact, normally pin 15 is pulled up
-//, if it's pulled to GND then other function will be called
+//, if it's pulled down to GND then other function will be called
 void check_dry_contact(app_widgets *widgets)
 {
     // Set RPI pin P1-15 to be an input
@@ -229,68 +246,69 @@ void check_dry_contact(app_widgets *widgets)
     bcm2835_close();
 }
 
+void display(app_widgets *widgets)
+{
+    g_mutex_lock(&mutex_lock_3);
+    gchar *temp = g_strdup_printf("%.1f", (float)(widgets->temp)/100);
+    gchar *humid = g_strdup_printf("%.1f", (float)(widgets->humid)/100);
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_real_temp), temp);
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_real_hu), humid);
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_temp), temp);
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_hu), humid);
+    
+    g_free(temp);
+    g_free(humid);
+    g_mutex_unlock(&mutex_lock_3);
+    
+    }
 void on_btn1_clicked(GtkButton *button, app_widgets *widgets)
 {
     g_thread_new(NULL, (GThreadFunc)relay1_control, (app_widgets*) widgets);
     }
-    
+//waiting    
 void on_btn2_clicked(GtkButton *button, app_widgets *widgets)
 {
     
     }
-    
+//waiting    
 void on_btn3_clicked(GtkButton *button, app_widgets *widgets)
 {
     
     }
-    
+//waiting    
 void on_btn4_clicked(GtkButton *button, app_widgets *widgets)
-{
-    
-    }
-    
-void on_btn_temp_up_clicked(GtkButton *button, app_widgets *widgets)
-{
-    
-    }
-
-void on_btn_temp_down_clicked(GtkButton *button, app_widgets *widgets)
-{
-    
-    }
-    
-void on_btn_hu_up_clicked(GtkButton *button, app_widgets *widgets)
-{
-    
-    }
-
-void on_btn_hu_down_clicked(GtkButton *button, app_widgets *widgets)
 {
     
     }
     
 void on_btn_set_clicked(GtkButton *button, app_widgets *widgets)
 {
+    //set countdown timer for operation and anethesia
     widgets->op_hrs = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->hrs_op_in));
     widgets->op_mnt = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->mnt_op_in));
     widgets->op_sec = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->sec_op_in));
     widgets->an_hrs = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->hrs_an_in));
     widgets->an_mnt = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->mnt_an_in));
     widgets->an_sec = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->sec_an_in));
-    //wait for temperature and humidity value
+    //set temperature and humidity value
+    widgets->adj_temp = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->spin_temp));
+    widgets->adj_hu = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->spin_hu));
+    //set count down clock next page
+    g_timeout_add_seconds(1, (GSourceFunc)clock_timer, widgets);
+    //g_timeout_add_seconds(1, (GSourceFunc)read_modbus_sensor, widgets);
     }
 
 void on_btn_run_clicked(GtkButton *button, app_widgets *widgets)
 {
         gtk_stack_set_visible_child_name(widgets->stack, "Run");
 	//format operation time
-	gchar *op_hrs = g_strdup_printf("%d", widgets->op_hrs);
-	gchar *op_mnt = g_strdup_printf("%d", widgets->op_mnt);
-	gchar *op_sec = g_strdup_printf("%d", widgets->op_sec);
+	gchar *op_hrs = g_strdup_printf("%02d", widgets->op_hrs);
+	gchar *op_mnt = g_strdup_printf("%02d", widgets->op_mnt);
+	gchar *op_sec = g_strdup_printf("%02d", widgets->op_sec);
 	//format anethesia time
-	gchar *an_hrs = g_strdup_printf("%d", widgets->an_hrs);
-	gchar *an_mnt = g_strdup_printf("%d", widgets->an_mnt);
-	gchar *an_sec = g_strdup_printf("%d", widgets->an_sec);
+	gchar *an_hrs = g_strdup_printf("%02d", widgets->an_hrs);
+	gchar *an_mnt = g_strdup_printf("%02d", widgets->an_mnt);
+	gchar *an_sec = g_strdup_printf("%02d", widgets->an_sec);
 	//set operation time in run display
 	gtk_label_set_text(GTK_LABEL(widgets->lbl_op_hrs), op_hrs);
 	gtk_label_set_text(GTK_LABEL(widgets->lbl_op_mnt), op_mnt);
@@ -310,62 +328,94 @@ void on_btn_run_clicked(GtkButton *button, app_widgets *widgets)
 
 void on_btn_reset_clicked(GtkButton *button, app_widgets *widgets)
 {
-    
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widgets->hrs_op_in), 0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widgets->mnt_op_in), 0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widgets->sec_op_in), 0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widgets->hrs_an_in), 0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widgets->mnt_an_in), 0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widgets->sec_an_in), 0);
     }
     
 void on_btn_shut_clicked(GtkButton *button, app_widgets *widgets)
 {
-    
+    gtk_main_quit();
     }
     
 
 //page 1
+//callback function to countdown the operation clock
+gboolean op_countdown(app_widgets *widgets)
+{
+    widgets->op_sec--;
+    if(widgets->op_sec < 0) 
+        {
+            widgets->op_sec = 59;
+            widgets->op_mnt--;
+            if(widgets->op_mnt < 0)
+            {
+                widgets->op_mnt = 59;
+                widgets->op_hrs--;
+                }
+            }
+    gchar *op_hrs = g_strdup_printf("%02d", widgets->op_hrs);
+    gchar *op_mnt = g_strdup_printf("%02d", widgets->op_mnt);
+    gchar *op_sec = g_strdup_printf("%02d", widgets->op_sec);
+    
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_op_hrs), op_hrs);
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_op_mnt), op_mnt);
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_op_sec), op_sec);
+    
+    g_free(op_hrs);
+    g_free(op_mnt);
+    g_free(op_sec);
+    if((widgets->op_hrs <= 0)&&(widgets->op_mnt <= 0) && (widgets->op_sec <= 0)) {return 0;}
+    else return 1;
+    }
+    
 void on_btn_op_start_clicked(GtkButton *button, app_widgets *widgets)
 {
+    g_timeout_add_seconds(1, (GSourceFunc)op_countdown, widgets);
+    }
+
+//callback function to countdown the anethesia clock
+gboolean an_countdown(app_widgets *widgets)
+{
+    widgets->an_sec--;
+    if(widgets->an_sec < 0) 
+        {
+            widgets->an_sec = 59;
+            widgets->an_mnt--;
+            if(widgets->an_mnt < 0)
+            {
+                widgets->an_mnt = 59;
+                widgets->an_hrs--;
+                }
+            }
+    gchar *an_hrs = g_strdup_printf("%02d", widgets->an_hrs);
+    gchar *an_mnt = g_strdup_printf("%02d", widgets->an_mnt);
+    gchar *an_sec = g_strdup_printf("%02d", widgets->an_sec);
     
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_an_hrs), an_hrs);
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_an_mnt), an_mnt);
+    gtk_label_set_text(GTK_LABEL(widgets->lbl_an_sec), an_sec);
+    
+    g_free(an_hrs);
+    g_free(an_mnt);
+    g_free(an_sec);
+    if((widgets->an_hrs < 0) || (widgets->an_mnt < 0) || (widgets->an_sec < 0)) {return 0;}
+    else return 1;
     }
     
 void on_btn_an_start_clicked(GtkButton *button, app_widgets *widgets)
 {
-    
+    g_timeout_add_seconds(1, (GSourceFunc)an_countdown, widgets);
+    }
+
+void on_btn_back_clicked(GtkButton *button, app_widgets *widgets)
+{
+    gtk_stack_set_visible_child_name(widgets->stack, "Setup");
     }
     
-//this function is one of the main thread to send a query to modbus sensor compliant with datasheet, then the 
-//sensor will return an array of data to read and update in app_widgets structure
-//and ready for further processing
-int read_modbus_sensor(app_widgets *widgets)
-{
-    modbus_t *ctx;
-    //allocate memory for sensor reading
-    widgets->rsp = (uint8_t*) malloc(MODBUS_RTU_MAX_ADU_LENGTH * sizeof(uint8_t));
-    memset(widgets->rsp, 0, MODBUS_RTU_MAX_ADU_LENGTH * sizeof(uint8_t));
-    //create new connect to RTU
-    ctx = modbus_new_rtu("/dev/ttyUSB0", 9600, 'N', 8, 1);
-    modbus_set_slave(ctx, SERVER_ID);
-    
-    if (modbus_connect(ctx) == -1) {
-        printf("Connection failed: %s\n",
-        modbus_strerror(errno));
-        modbus_free(ctx);
-        return -1;
-		}
-		else 
-        {printf("Connection succeeded\n");}
-        
-    req_length = modbus_send_raw_request(ctx, req, 8*sizeof(uint8_t));
-    if(req_length < 0) {printf("read failed :(\n");}
-	modbus_receive_confirmation(ctx, widgets->rsp);
-	for(int i = 0; i<10;i++)
-		{
-			printf("%x\n", widgets->rsp[i]);
-        }
-			
-		free(widgets->rsp);
-		modbus_close(ctx);
-		modbus_free(ctx);
-        return 0;
-}
-
 /***********read 4-20mA value***********/
 void readADC(app_widgets *widgets)
 {
@@ -414,8 +464,6 @@ void readADC(app_widgets *widgets)
             }
         close(fd);
 }
-
-
     
 int main(int argc, char *argv[])
 {    
@@ -458,10 +506,11 @@ int main(int argc, char *argv[])
     widgets->btn3 = GTK_WIDGET(gtk_builder_get_object(builder, "btn3"));
     widgets->btn4 = GTK_WIDGET(gtk_builder_get_object(builder, "btn4"));
     
-    widgets->btn_temp_up = GTK_WIDGET(gtk_builder_get_object(builder, "btn_temp_up"));
-    widgets->btn_temp_down = GTK_WIDGET(gtk_builder_get_object(builder, "btn_temp_down"));
-    widgets->btn_hu_up = GTK_WIDGET(gtk_builder_get_object(builder, "btn_hu_up"));
-    widgets->btn_hu_down = GTK_WIDGET(gtk_builder_get_object(builder, "btn_hu_down"));
+    widgets->spin_temp = GTK_WIDGET(gtk_builder_get_object(builder, "spin_temp"));
+    widgets->spin_hu = GTK_WIDGET(gtk_builder_get_object(builder, "spin_hu"));
+    
+    widgets->lbl_real_temp = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_real_temp"));
+    widgets->lbl_real_hu = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_real_hu"));
     
     //page 1
     widgets->btn_op_start = GTK_WIDGET(gtk_builder_get_object(builder, "btn_op_start"));
@@ -485,6 +534,9 @@ int main(int argc, char *argv[])
     
     gtk_builder_connect_signals(builder, widgets);
     g_object_unref(builder);
+    
+    g_timeout_add_seconds(1, (GSourceFunc)display, widgets);
+    
     gtk_widget_show(window);
 
     gtk_main();
@@ -497,6 +549,7 @@ void on_window_main_destroy()
 {
     gtk_main_quit();
 }
+
 
 /***********spi read / no touch*************/
 static void writeReset(int fd)
@@ -580,6 +633,11 @@ static int readData(int fd)
 	  
 	return (rx1[0]<<8)|(rx1[1]);
 }
+
+/*void on_btn_count_clicked(GtkButton *button, app_widgets *widgets)
+{
+    g_timeout_add_seconds(1, (GSourceFunc)countdown, widgets);
+}*/
 /*
 gboolean timer_handler(app_widgets *widgets)
 {

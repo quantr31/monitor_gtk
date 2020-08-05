@@ -17,6 +17,13 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkAdjustment" id="hu_set">
+    <property name="lower">30</property>
+    <property name="upper">100</property>
+    <property name="value">70</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkAdjustment" id="op_hrs_adj">
     <property name="upper">23</property>
     <property name="step_increment">1</property>
@@ -29,6 +36,13 @@
   </object>
   <object class="GtkAdjustment" id="op_sec_adj">
     <property name="upper">59</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="temp_set">
+    <property name="lower">10</property>
+    <property name="upper">50</property>
+    <property name="value">25</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -67,83 +81,16 @@
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="row_homogeneous">True</property>
-                <property name="column_homogeneous">True</property>
-                <child>
-                  <object class="GtkButton" id="btn_temp_up">
-                    <property name="label" translatable="yes">+</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="image_position">top</property>
-                    <signal name="clicked" handler="on_btn_temp_up_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btn_temp_down">
-                    <property name="label" translatable="yes">-</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="image_position">bottom</property>
-                    <signal name="clicked" handler="on_btn_temp_down_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btn_hu_up">
-                    <property name="label" translatable="yes">+</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="image_position">top</property>
-                    <signal name="clicked" handler="on_btn_hu_up_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btn_hu_down">
-                    <property name="label" translatable="yes">-</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="image_position">top</property>
-                    <signal name="clicked" handler="on_btn_hu_down_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">1</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="left_attach">6</property>
-                <property name="top_attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkGrid">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <property name="resize_mode">immediate</property>
                 <property name="row_homogeneous">True</property>
                 <property name="column_homogeneous">True</property>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="height_request">70</property>
+                  <object class="GtkSpinButton" id="spin_temp">
+                    <property name="name">spin_temp</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">expected</property>
+                    <property name="can_focus">True</property>
+                    <property name="orientation">vertical</property>
+                    <property name="adjustment">temp_set</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
@@ -163,14 +110,12 @@
                 <property name="row_homogeneous">True</property>
                 <property name="column_homogeneous">True</property>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="height_request">70</property>
+                  <object class="GtkSpinButton" id="spin_hu">
+                    <property name="name">spin_hu</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="vexpand">False</property>
-                    <property name="label" translatable="yes">expected</property>
-                    <property name="xalign">0.5</property>
-                    <property name="yalign">0.5</property>
+                    <property name="can_focus">True</property>
+                    <property name="orientation">vertical</property>
+                    <property name="adjustment">hu_set</property>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
@@ -559,7 +504,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="lbl_real_temp">
                 <property name="height_request">100</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -574,7 +519,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="lbl_real_hu">
                 <property name="width_request">127</property>
                 <property name="height_request">100</property>
                 <property name="visible">True</property>
@@ -662,6 +607,9 @@
                 <property name="left_attach">4</property>
                 <property name="top_attach">2</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>
@@ -992,7 +940,7 @@
                 <property name="row_homogeneous">True</property>
                 <child>
                   <object class="GtkLabel">
-                    <property name="width_request">80</property>
+                    <property name="width_request">100</property>
                     <property name="height_request">160</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -1005,7 +953,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="width_request">80</property>
+                    <property name="width_request">100</property>
                     <property name="height_request">160</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -1038,6 +986,29 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="width_request">100</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Pressure</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">label</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
                   </packing>
                 </child>
               </object>
@@ -1350,6 +1321,7 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="hexpand">False</property>
+                    <signal name="clicked" handler="on_btn_back_clicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
