@@ -10,38 +10,28 @@
  * Company: LFS 
  * Date: July 1st 2020
  * ************************************************/
+
+//#include <stdint.h>
+//#include <unistd.h>
+//#include <stdio.h>
+//#include <time.h>
+//#include <string.h>
+//#include <sys/types.h> // open
+//#include <sys/stat.h>  // open
+//#include <inttypes.h>  // uint8_t, etc
 #include <stdlib.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <stdio.h>
 #include <errno.h>
-#include <string.h>
 //system access
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <linux/types.h>
-#include <linux/spi/spidev.h>
+#include <linux/i2c-dev.h>
 //external lib
 #include <gtk/gtk.h>
 #include <bcm2835.h>
 #include <glib.h>
-#include <time.h>
+#include <X11/Xlib.h>
 #include <modbus.h>
-#include "gz_clk.h"
-
-//declaration for SPI ADC
-static const char *ADC_SPI = "/dev/spidev0.0";
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-
-static uint8_t mode = SPI_CPHA | SPI_CPOL;
-static uint8_t bits = 8;
-static uint8_t speed = 5;
-static uint8_t delay = 10;
-
-static void writeReset(int fd);
-static void writeReg(int fd, uint8_t v);
-static uint8_t readReg(int fd);
-static int readData(int fd);
 
 //declaration for MODBUS RTU unit
 #define SERVER_ID 1
@@ -118,17 +108,11 @@ typedef struct {
     uint16_t temp;
     uint16_t humid;
     //adc var
-    uint16_t adc_val;
+    float adc_val;
     //adjust temp&humidity
     uint8_t adj_temp;
     uint8_t adj_hu;
 } app_widgets;
-
-static void pabort(const char *s)
-{
-	perror(s);
-	abort();
-}
 
 //this function is one of the main thread to send a query to modbus sensor compliant with datasheet, then the 
 //sensor will return an array of data to read and update in app_widgets structure
@@ -151,17 +135,68 @@ int read_modbus_sensor(app_widgets *widgets)
 		}
 		else 
         {printf("Connection succeeded\n");}
-        
+    while(1){   
     req_length = modbus_send_raw_request(ctx, req, 8*sizeof(uint8_t));
     if(req_length < 0) {printf("read failed :(\n");}
 	modbus_receive_confirmation(ctx, widgets->rsp);
 	widgets->temp = ((widgets->rsp[3]<<8)|widgets->rsp[4]);
 	widgets->humid = ((widgets->rsp[5]<<8)|widgets->rsp[6]);	
+    }
 	    free(widgets->rsp);
 	    modbus_close(ctx);
 	    modbus_free(ctx);
+	
         return 0;
 }
+
+void ADCread(app_widgets *widgets)
+{
+    int fd;
+    uint8_t ads_addr = 0x48;
+    uint8_t *buf;
+    buf = (uint8_t*)malloc(sizeof(uint8_t)*10);
+    fd = open("/dev/i2c-1", O_RDWR);
+    ioctl(fd, I2C_SLAVE, ads_addr);
+    // open device on /dev/i2c-1 the default on Raspberry Pi B
+    /*if ((fd = open("/dev/i2c-1", O_RDWR)) < 0) {
+	printf("Error: Couldn't open device! %d\n", fd);
+	exit(-1);
+    }
+    // connect to ads1115 as i2c slave
+    if (ioctl(fd, I2C_SLAVE, ads_addr) < 0) {
+	printf("Error: Couldn't find device on address!\n");
+	exit(-1);
+    }*/
+    //conversion
+    while(1){
+	buf[0] = 1;
+	buf[1] = 0xc3;
+	buf[2] = 0x05;
+      if (write(fd, buf, 3) != 3) {
+	perror("Write to register 1");
+	exit(-1);
+	}
+      do{
+	if (read(fd, buf, 2) != 2) {
+	  perror("Read conversion");
+	  exit(-1);
+	}
+	} while ((buf[0] & 0x80) == 0);
+	buf[0] = 0;   // conversion register is 0
+      if (write(fd, buf, 1) != 1) {
+	perror("Write register select");
+	exit(-1);
+	}
+      if (read(fd, buf, 2) != 2) {
+	perror("Read conversion");
+	exit(-1);
+	}
+      widgets->adc_val = (float)(((int16_t)buf[0]*256 + (uint16_t)buf[1])*4.096/32768.0);
+      printf("%f \n", widgets->adc_val);
+	}
+	close(fd);
+	free(buf);
+    }
 
 /**************normal clock **********/
 gboolean clock_timer(app_widgets *widgets)
@@ -177,6 +212,7 @@ gboolean clock_timer(app_widgets *widgets)
     gtk_label_set_text(GTK_LABEL(widgets->lbl_time), dt_format);
     g_free(dt_format);
     g_free(dmy_format);
+    g_date_time_unref(date_time);
     return TRUE;
     }
 
@@ -213,10 +249,10 @@ gboolean display_dry_contact(app_widgets *widgets)
 gboolean display_dry_contact_1(app_widgets *widgets)
 {
     g_mutex_lock(&mutex_lock_2);
-    widgets->data = 3;
-    gchar *text2 = g_strdup_printf("%d", widgets->data);
+    //widgets->data = 3;
+    //gchar *text2 = g_strdup_printf("%d", widgets->data);
     //gtk_label_set_text(GTK_LABEL(widgets->contact_lbl),text2);
-    g_free(text2);
+    //g_free(text2);
     g_mutex_unlock(&mutex_lock_2);
     return TRUE;
 }
@@ -243,14 +279,15 @@ void check_dry_contact(app_widgets *widgets)
             delay(500);
             while(gtk_events_pending()){gtk_main_iteration();}
     }
-    bcm2835_close();
+    //bcm2835_close();
 }
 
 void display(app_widgets *widgets)
 {
     g_mutex_lock(&mutex_lock_3);
-    gchar *temp = g_strdup_printf("%.1f", (float)(widgets->temp)/100);
-    gchar *humid = g_strdup_printf("%.1f", (float)(widgets->humid)/100);
+    gchar *temp = g_strdup_printf("%.1f°C", (float)(widgets->temp)/100);
+    gchar *humid = g_strdup_printf("%.1f %%", (float)(widgets->humid)/100);
+    
     gtk_label_set_text(GTK_LABEL(widgets->lbl_real_temp), temp);
     gtk_label_set_text(GTK_LABEL(widgets->lbl_real_hu), humid);
     gtk_label_set_text(GTK_LABEL(widgets->lbl_temp), temp);
@@ -259,8 +296,8 @@ void display(app_widgets *widgets)
     g_free(temp);
     g_free(humid);
     g_mutex_unlock(&mutex_lock_3);
-    
     }
+    
 void on_btn1_clicked(GtkButton *button, app_widgets *widgets)
 {
     g_thread_new(NULL, (GThreadFunc)relay1_control, (app_widgets*) widgets);
@@ -296,11 +333,12 @@ void on_btn_set_clicked(GtkButton *button, app_widgets *widgets)
     //set count down clock next page
     g_timeout_add_seconds(1, (GSourceFunc)clock_timer, widgets);
     //g_timeout_add_seconds(1, (GSourceFunc)read_modbus_sensor, widgets);
+    
     }
 
 void on_btn_run_clicked(GtkButton *button, app_widgets *widgets)
 {
-        gtk_stack_set_visible_child_name(widgets->stack, "Run");
+    gtk_stack_set_visible_child_name(widgets->stack, "Run");
 	//format operation time
 	gchar *op_hrs = g_strdup_printf("%02d", widgets->op_hrs);
 	gchar *op_mnt = g_strdup_printf("%02d", widgets->op_mnt);
@@ -346,6 +384,8 @@ void on_btn_shut_clicked(GtkButton *button, app_widgets *widgets)
 //callback function to countdown the operation clock
 gboolean op_countdown(app_widgets *widgets)
 {
+    if((widgets->op_hrs <= 0)&&(widgets->op_mnt <= 0)&&(widgets->op_sec <= 0)) {return 0;}
+    else {
     widgets->op_sec--;
     if(widgets->op_sec < 0) 
         {
@@ -368,8 +408,9 @@ gboolean op_countdown(app_widgets *widgets)
     g_free(op_hrs);
     g_free(op_mnt);
     g_free(op_sec);
-    if((widgets->op_hrs <= 0)&&(widgets->op_mnt <= 0) && (widgets->op_sec <= 0)) {return 0;}
-    else return 1;
+    
+    return 1;
+        }
     }
     
 void on_btn_op_start_clicked(GtkButton *button, app_widgets *widgets)
@@ -380,6 +421,8 @@ void on_btn_op_start_clicked(GtkButton *button, app_widgets *widgets)
 //callback function to countdown the anethesia clock
 gboolean an_countdown(app_widgets *widgets)
 {
+    if((widgets->an_hrs <= 0) && (widgets->an_mnt <= 0) && (widgets->an_sec <= 0)) {return 0;}
+    else{
     widgets->an_sec--;
     if(widgets->an_sec < 0) 
         {
@@ -402,8 +445,9 @@ gboolean an_countdown(app_widgets *widgets)
     g_free(an_hrs);
     g_free(an_mnt);
     g_free(an_sec);
-    if((widgets->an_hrs < 0) || (widgets->an_mnt < 0) || (widgets->an_sec < 0)) {return 0;}
-    else return 1;
+    
+    return 1;
+        }
     }
     
 void on_btn_an_start_clicked(GtkButton *button, app_widgets *widgets)
@@ -416,54 +460,18 @@ void on_btn_back_clicked(GtkButton *button, app_widgets *widgets)
     gtk_stack_set_visible_child_name(widgets->stack, "Setup");
     }
     
-/***********read 4-20mA value***********/
-void readADC(app_widgets *widgets)
-{
-        int ret = 0;
-        int fd = open(ADC_SPI, O_RDWR);
-        if(fd < 0) printf("Can't open device");
-        ret = ioctl(fd, SPI_IOC_WR_MODE, &mode);
-        if(ret  == -1) printf("Can't set SPI mode");
-        ret = ioctl(fd, SPI_IOC_RD_MODE, &mode);
-        if(ret == -1) printf("Can't get SPI mode");
-        ret = ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits);
-        if(ret == -1) printf("Can't set bits per word");
-        ret = ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &bits);
-        if(ret == -1) printf("Can't get bits per word");
-        ret = ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
-        if(ret == -1) printf("Can't set max speed Hz");
-        ret = ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
-        if(ret == -1) printf("Can't get max speed Hz");
-        fprintf(stderr, "spi mode: %d \n", mode);
-        fprintf(stderr, "bits per word: %d\n", bits);
-        fprintf(stderr, "max speed: %d Hz\n", speed);
-        //enable master clock
-        gz_clock_ena(GZ_CLK_5MHz, 5);
-        //reset the AD7705
-        writeReset(fd);
-        //tell AD7705 that the next write will be to the clock reg
-        writeReg(fd, 0x20);
-        //write 00001100: CLOCKDIV=1, CLK=1, expects 4.9152MHz input clock
-        writeReg(fd, 0x0C);
-        //tell AD7705 that the next write will be the setup reg
-        writeReg(fd, 0x10);
-        //initiate a self calib then start converting
-        writeReg(fd, 0x40);
-        //read data
-        while(1){
-            uint16_t d=0;
-            do{
-                writeReg(fd, 0x08);
-                d = readReg(fd);
-                } while (d & 0x80);
-                
-            //read the data reg
-            writeReg(fd, 0x38);
-            widgets->adc_val = readData(fd) - 0x8000;
-            printf("data = %d \n", widgets->adc_val);
-            }
-        close(fd);
-}
+void myCSS(void){
+    GtkCssProvider *provider;
+    GdkDisplay *display;
+    GdkScreen *screen;
+    
+    provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_path(provider, "/home/pi/Desktop/project/src/style.css", NULL);
+    display = gdk_display_get_default();
+    screen = gdk_display_get_default_screen(display);
+    gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(provider);
+    }
     
 int main(int argc, char *argv[])
 {    
@@ -471,18 +479,24 @@ int main(int argc, char *argv[])
     GtkBuilder      *builder; 
     GtkWidget       *window;
     app_widgets *widgets = g_slice_new(app_widgets);
+    GThread *thread1;
+    GThread *thread2;
+    GThread *thread3;
     
     //init bcm2835 lib
     if(!bcm2835_init())
     return 1;
     //thread to read ADC via SPI
-    g_thread_new(NULL, (GThreadFunc)readADC, (app_widgets*) widgets);
+    //thread1 = g_thread_new(NULL, (GThreadFunc)readADC, (app_widgets*) widgets);
+    thread1 = g_thread_new(NULL, (GThreadFunc)ADCread, (app_widgets*) widgets);
     //thread to check dry contact
-    g_thread_new(NULL, (GThreadFunc)check_dry_contact, (app_widgets*) widgets);
+    thread2 = g_thread_new(NULL, (GThreadFunc)check_dry_contact, (app_widgets*) widgets);
     //thread to read modbus sensor 
-    g_thread_new(NULL, (GThreadFunc)read_modbus_sensor, (app_widgets*) widgets);
+    thread3 = g_thread_new(NULL, (GThreadFunc)read_modbus_sensor, (app_widgets*) widgets);
     
+    XInitThreads();
     gtk_init(&argc, &argv);
+    myCSS();
     builder = gtk_builder_new_from_file("glade/window_main.glade");
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
     gtk_widget_set_size_request(GTK_WIDGET(window), 1920, 1080);
@@ -540,6 +554,9 @@ int main(int argc, char *argv[])
     gtk_widget_show(window);
 
     gtk_main();
+    g_thread_unref(thread1);
+    g_thread_unref(thread2);
+    g_thread_unref(thread3);
     g_slice_free(app_widgets, widgets);
     return 0;
 }
@@ -548,90 +565,6 @@ int main(int argc, char *argv[])
 void on_window_main_destroy()
 {
     gtk_main_quit();
-}
-
-
-/***********spi read / no touch*************/
-static void writeReset(int fd)
-{
-	int ret;
-	uint8_t tx1[5] = {0xff,0xff,0xff,0xff,0xff};
-	uint8_t rx1[5] = {0};
-	struct spi_ioc_transfer tr = {
-		.tx_buf = (unsigned long)tx1,
-		.rx_buf = (unsigned long)rx1,
-		.len = ARRAY_SIZE(tx1),
-		.delay_usecs = delay,
-		.speed_hz = speed,
-		.bits_per_word = bits,
-	};
-	ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
-	if (ret < 1)
-		pabort("can't send spi message");
-}
-
-static void writeReg(int fd, uint8_t v)
-{
-	int ret;
-	uint8_t tx1[1];
-	tx1[0] = v;
-	uint8_t rx1[1] = {0};
-	struct spi_ioc_transfer tr = {
-		.tx_buf = (unsigned long)tx1,
-		.rx_buf = (unsigned long)rx1,
-		.len = ARRAY_SIZE(tx1),
-		.delay_usecs = delay,
-		.speed_hz = speed,
-		.bits_per_word = bits,
-	};
-
-	ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
-	if (ret < 1)
-		pabort("can't send spi message");
-
-}
-
-static uint8_t readReg(int fd)
-{
-	int ret;
-	uint8_t tx1[1];
-	tx1[0] = 0;
-	uint8_t rx1[1] = {0};
-	struct spi_ioc_transfer tr = {
-		.tx_buf = (unsigned long)tx1,
-		.rx_buf = (unsigned long)rx1,
-		.len = ARRAY_SIZE(tx1),
-		.delay_usecs = delay,
-		.speed_hz = speed,
-		.bits_per_word = 8,
-	};
-
-	ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
-	if (ret < 1)
-	  pabort("can't send spi message");
-	  
-	return rx1[0];
-}
-
-static int readData(int fd)
-{
-	int ret;
-	uint8_t tx1[2] = {0,0};
-	uint8_t rx1[2] = {0,0};
-	struct spi_ioc_transfer tr = {
-		.tx_buf = (unsigned long)tx1,
-		.rx_buf = (unsigned long)rx1,
-		.len = ARRAY_SIZE(tx1),
-		.delay_usecs = delay,
-		.speed_hz = speed,
-		.bits_per_word = 8,
-	};
-
-	ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
-	if (ret < 1)
-	  pabort("can't send spi message");
-	  
-	return (rx1[0]<<8)|(rx1[1]);
 }
 
 /*void on_btn_count_clicked(GtkButton *button, app_widgets *widgets)
