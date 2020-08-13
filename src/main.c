@@ -53,7 +53,7 @@ uint8_t is_contact;
 typedef struct {
     GtkStack *stack;
     //page 0
-    //spin button
+    //spin button for countdown timer 
     GtkWidget *hrs_op_in;
     GtkWidget *mnt_op_in;
     GtkWidget *sec_op_in;
@@ -65,17 +65,30 @@ typedef struct {
     GtkWidget *btn_run;
     GtkWidget *btn_reset;
     GtkWidget *btn_shut;
-    
-    GtkWidget *btn1;
-    GtkWidget *btn2;
-    GtkWidget *btn3;
-    GtkWidget *btn4;
-    
+    //light switch 
+    GtkWidget *sw_light1;
+    GtkWidget *sw_light2;
+    GtkWidget *sw_uv;
+    //change temp and humid
     GtkWidget *spin_temp;
     GtkWidget *spin_hu;
-    
     GtkWidget *lbl_real_temp;
     GtkWidget *lbl_real_hu;
+    //status display 
+    GtkWidget *lbl_ahu;
+    GtkWidget *lbl_fan;
+    GtkWidget *lbl_heater;
+    GtkWidget *lbl_filter;
+    GtkWidget *lbl_uv;
+    
+    GtkWidget *lbl_air4;
+    GtkWidget *lbl_air7;
+    GtkWidget *lbl_o2;
+    GtkWidget *lbl_vac;
+    GtkWidget *lbl_co2;
+    GtkWidget *lbl_agss;
+    GtkWidget *lbl_n2o;
+    
     //page 1
     GtkWidget *btn_op_start;
     GtkWidget *btn_an_start;
@@ -145,7 +158,6 @@ int read_modbus_sensor(app_widgets *widgets)
 	    free(widgets->rsp);
 	    modbus_close(ctx);
 	    modbus_free(ctx);
-	
         return 0;
 }
 
@@ -222,9 +234,9 @@ void relay1_control(app_widgets *widgets)
       while(1)
       {
             bcm2835_gpio_write(PIN_OUT, HIGH);
-            delay(500);
-            bcm2835_gpio_write(PIN_OUT, LOW);
-            delay(500);
+            //delay(500);
+            //bcm2835_gpio_write(PIN_OUT, LOW);
+            //delay(500);
             while(gtk_events_pending()){gtk_main_iteration();}
       } 
       bcm2835_close(); 
@@ -515,14 +527,26 @@ int main(int argc, char *argv[])
     widgets->btn_shut = GTK_WIDGET(gtk_builder_get_object(builder, "btn_shut"));
     widgets->btn_run = GTK_WIDGET(gtk_builder_get_object(builder, "btn_run"));
     
-    widgets->btn1 = GTK_WIDGET(gtk_builder_get_object(builder, "btn1"));
-    widgets->btn2 = GTK_WIDGET(gtk_builder_get_object(builder, "btn2"));
-    widgets->btn3 = GTK_WIDGET(gtk_builder_get_object(builder, "btn3"));
-    widgets->btn4 = GTK_WIDGET(gtk_builder_get_object(builder, "btn4"));
+    widgets->sw_light1 = GTK_WIDGET(gtk_builder_get_object(builder, "sw_light1"));
+    widgets->sw_light2 = GTK_WIDGET(gtk_builder_get_object(builder, "sw_light2"));
+    widgets->sw_uv = GTK_WIDGET(gtk_builder_get_object(builder, "sw_uv"));
+    
+    widgets->lbl_ahu = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_ahu"));
+    widgets->lbl_fan = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_fan"));
+    widgets->lbl_heater = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_heater"));
+    widgets->lbl_filter = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_filter"));
+    widgets->lbl_uv = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_uv"));
+    
+    widgets->lbl_air4 = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_air4"));
+    widgets->lbl_air7 = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_air7"));
+    widgets->lbl_o2 = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_o2"));
+    widgets->lbl_vac = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_vac"));
+    widgets->lbl_co2 = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_co2"));
+    widgets->lbl_agss = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_agss"));
+    widgets->lbl_n2o = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_n2o"));
     
     widgets->spin_temp = GTK_WIDGET(gtk_builder_get_object(builder, "spin_temp"));
     widgets->spin_hu = GTK_WIDGET(gtk_builder_get_object(builder, "spin_hu"));
-    
     widgets->lbl_real_temp = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_real_temp"));
     widgets->lbl_real_hu = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_real_hu"));
     

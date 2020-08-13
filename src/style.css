@@ -2,36 +2,426 @@ window{
 	background-color: azure;
 }
 
-spinbutton{
-	color: white;
+/*page 1*/
+
+#lbl_hide1{
+	color: transparent;
+}
+#lbl_hide2{
+	color: transparent;
+}
+#lbl_hide3{
+	color: transparent;
+}
+#lbl_hide4{
+	color: transparent;
+}
+#lbl_hide5{
+	color: transparent;
+}
+#lbl_hide6{
+	color: transparent;
+}
+
+#lbl_op{
+	background-color: azure;
+	border-radius: 15px;
+	margin: 5px 5px 5px 5px;
+	border-top-style: solid;
+	border-top-width: 3px;
+	border-top-color: orange;
+	border-bottom-style: solid;
+	border-bottom-width: 3px;
+	border-bottom-color: orange; 
+}
+
+#lbl_an{
+	background-color: azure;
+	border-radius: 15px;
+	margin: 5px 5px 5px 5px;
+	border-top-style: solid;
+	border-top-width: 3px;
+	border-top-color: orange;
+	border-bottom-style: solid;
+	border-bottom-width: 3px;
+	border-bottom-color: orange;
+}
+
+#grid_ahu{
+	background-color: azure;
+	border-radius: 15px;
+	margin: 20px 5px 5px 5px;
+	border-top-style: solid;
+	border-top-width: 3px;
+	border-top-color: orange;
+	
+}
+
+#grid_air{
+	background-color: azure;
+	border-radius: 15px;
+	margin: 20px 5px 5px 5px;
+	border-top-style: solid;
+	border-top-width: 3px;
+	border-top-color: orange;
+	
+}
+
+#grid_light{
+	background-color: azure;
+	border-radius: 15px;
+	margin: 20px 5px 5px 5px;
+	border-top-style: solid;
+	border-top-width: 3px;
+	border-top-color: orange;
+}
+
+#grid_temp{
+	background-color: azure;
+	border-radius: 15px;
+	margin: 20px 5px 5px 5px;
+	border-top-style: solid;
+	border-top-width: 3px;
+	border-top-color: orange; 
+}
+
+/*operation hours in*/
+#hrs_op_in{
+	color: navy;
 	font-size: 150px;
-	font-family: Serif;
+	font-family: Arial Black;
+	font-weight: bolder;
+	caret-color: transparent;
+	text-shadow: 1px 1px black;
+	font-stretch: extra-expanded; 
+}
+
+#hrs_op_in > entry{
+	background-color: azure;
+	border-radius: 60px;
+	border-color: azure;
 	font-weight: bold;
-	cursor: none;
 }
-
-spinbutton > entry{
-	background-color: #FFCC66;
-	border-radius: 200px;
-	}
 	
-spinbutton > button.down{
-	/*min-width: 0px;*/
-	padding: 4px;
-	border-bottom: 0px;
-	border-color: azure;
-	background-color: azure;
-	background-image: url("image/down.png"); 
-}
-
-spinbutton > button.up{
-
+#hrs_op_in > button.down{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/up.png");
+	background-image: url("image/downtri.png"); 
+	color: transparent; 
 }
 
-button{
+#hrs_op_in > button.up{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/up_solid.png");
+	color: transparent;
+}
+
+/*operation minute in*/
+#mnt_op_in{
+	color: navy;
+	font-size: 150px;
+	/*font-family: Arial Black;*/
+	font-weight: bold;
+	caret-color: transparent;
+	text-shadow: 1px 1px black;
+}
+
+#mnt_op_in > entry{
+	background-color: azure;
+	border-radius: 60px;
+	border-color: azure;
+	font-weight: bold;
+}
 	
+#mnt_op_in > button.down{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/downtri.png"); 
+	color: transparent; 
+}
+
+#mnt_op_in > button.up{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/up_solid.png");
+	color: transparent;
+}
+
+/*operation second in*/
+#sec_op_in{
+	color: navy;
+	font-size: 150px;
+	font-family: Arial Black;
+	font-weight: bold;
+	caret-color: transparent;
+	text-shadow: 1px 1px black;
+}
+
+#sec_op_in > entry{
+	background-color: azure;
+	border-radius: 60px;
+	border-color: azure;
+}
+	
+#sec_op_in > button.down{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/downtri.png"); 
+	color: transparent; 
+}
+
+#sec_op_in > button.up{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/up_solid.png");
+	color: transparent;
+}
+
+/*anethesia minute in*/
+#mnt_an_in{
+	color: navy;
+	font-size: 150px;
+	font-family: Arial Black;
+	font-weight: bold;
+	caret-color: transparent;
+	text-shadow: 1px 1px black;
+}
+
+#mnt_an_in > entry{
+	background-color: azure;
+	border-radius: 60px;
+	border-color: azure;
+}
+	
+#mnt_an_in > button.down{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/downtri.png"); 
+	color: transparent; 
+}
+
+#mnt_an_in > button.up{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/up_solid.png");
+	color: transparent;
+}
+
+/*anethesia hour in*/
+#hrs_an_in{
+	color: navy;
+	font-size: 150px;
+	font-family: Arial Black;
+	font-weight: bold;
+	caret-color: transparent;
+	text-shadow: 1px 1px black;
+}
+
+#hrs_an_in > entry{
+	background-color: azure;
+	border-radius: 60px;
+	border-color: azure;
+}
+	
+#hrs_an_in > button.down{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/downtri.png"); 
+	color: transparent; 
+}
+
+#hrs_an_in > button.up{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/up_solid.png");
+	color: transparent;
+}
+
+/*anethesia second in*/
+#sec_an_in{
+	color: navy;
+	font-size: 150px;
+	font-family: Arial Black;
+	font-weight: bold;
+	caret-color: transparent;
+	text-shadow: 1px 1px black;
+}
+
+#sec_an_in > entry{
+	background-color: azure;
+	border-radius: 60px;
+	border-color: azure;
+}
+	
+#sec_an_in > button.down{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/downtri.png"); 
+	color: transparent; 
+}
+
+#sec_an_in > button.up{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/up_solid.png");
+	color: transparent;
+}
+
+
+/*change temperature*/
+#spin_temp{
+	color: black;
+	font-size: 40px;
+	font-family: Arial Black;
+	font-weight: bold;
+	text-shadow: 1px 1px black;
+}
+
+#spin_temp > entry{
+	background-color: azure;
+	border-color: azure; 
+}
+
+#spin_temp > button.down{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/down4.png");
+	color: transparent;
+}
+
+#spin_temp > button.up{
+	padding: 4px;
+	border-color: azure; 
+	background-color: azure;
+	background-image: url("image/up4.png");
+	color: transparent;
+}
+
+/*change humidity*/
+#spin_hu{
+	color: black;
+	font-size: 40px;
+	font-family: Arial Black; 
+	font-weight: bold;
+	text-shadow: 1px 1px black;
+}
+
+#spin_hu > entry{
+	background-color: azure;
+	border-color: azure;
+}
+
+#spin_hu > button.down{
+	padding: 4px;
+	border-color: azure;
+	background-color: azure;
+	background-image: url("image/down4.png");
+	color: transparent;
+}
+
+#spin_hu > button.up{
+	padding: 4px;
+	border-color: azure; 
+	background-color: azure;
+	background-image: url("image/up4.png");
+	color: transparent;
+}
+button.toggle{
+	color: navy;
+}
+
+/*page 2*/
+#run_op_hrs{
+	color: navy; 
+}
+
+#run_op_mnt{
+	color: navy; 
+}
+
+#run_op_sec{
+	color: navy; 
+}
+
+#run_an_hrs{
+	color: navy;
+}
+
+#run_an_mnt{
+	color: navy; 
+}
+
+#run_an_sec{
+	color: navy;
+}
+
+#lbl_date{
+	font-family: Arial Black;
+	color: #00A388;
+	font-size: 50px;
+	font-weight: bold;
+}
+
+#lbl_time{
+	font-family: Arial Black;
+	color: #00A388;
+	font-size: 50px;
+	font-weight: bold;
+}
+
+#lbl_cur_date{
+	color: navy;
+}
+
+#lbl_cur_time{
+	color: navy;
+}
+
+#lbl_temp{
+	font-family: arial;
+	color: #00A388;
+	font-size: 50px;
+	font-weight: bold;
+
+}
+
+#lbl_hu{
+	font-family: arial;
+	color: #00A388;
+	font-size: 50px;
+	font-weight: bold;
+
+}
+
+#lbl_press{
+	font-family: arial;
+	color: #00A388;
+	font-size: 50px;
+	font-weight: bold;
+}
+
+#lbl_cur_temp{
+	color: navy;
+}
+
+#lbl_cur_hu{
+	color: navy;
+}
+
+#lbl_cur_press{
+	color: navy;
 }
