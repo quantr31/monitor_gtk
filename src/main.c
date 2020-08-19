@@ -70,24 +70,33 @@ typedef struct {
     GtkWidget *sw_light2;
     GtkWidget *sw_uv;
     //change temp and humid
+    GtkWidget *img_temp;
+    GtkWidget *img_hu;
     GtkWidget *spin_temp;
     GtkWidget *spin_hu;
     GtkWidget *lbl_real_temp;
     GtkWidget *lbl_real_hu;
     //status display 
-    GtkWidget *lbl_ahu;
-    GtkWidget *lbl_fan;
-    GtkWidget *lbl_heater;
-    GtkWidget *lbl_filter;
-    GtkWidget *lbl_uv;
+    GtkWidget *img_fan;
+    GtkWidget *img_heater;
+    GtkWidget *img_filter;
+    GtkWidget *img_uv;
     
-    GtkWidget *lbl_air4;
-    GtkWidget *lbl_air7;
-    GtkWidget *lbl_o2;
-    GtkWidget *lbl_vac;
-    GtkWidget *lbl_co2;
-    GtkWidget *lbl_agss;
-    GtkWidget *lbl_n2o;
+    GtkWidget *img_light1;
+    GtkWidget *img_light2;
+    GtkWidget *img_lightuv;
+    
+    GtkWidget *img_o2;
+    GtkWidget *img_vac;
+    GtkWidget *img_co2;
+    GtkWidget *img_agss;
+    GtkWidget *img_n2o;
+    
+    //btn picture
+    GtkWidget *img_play;
+    GtkWidget *img_set;
+    GtkWidget *img_reset;
+    GtkWidget *img_shut;
     
     //page 1
     GtkWidget *btn_op_start;
@@ -103,6 +112,16 @@ typedef struct {
     GtkWidget *lbl_time;
     GtkWidget *lbl_temp;
     GtkWidget *lbl_hu;
+    GtkWidget *lbl_pre;
+    
+    GtkWidget *img_temp1;
+    GtkWidget *img_hu1;
+    GtkWidget *img_pre;
+    GtkWidget *img_back;
+    GtkWidget *img_reset1;
+    GtkWidget *img_shut1;
+    GtkWidget *img_run_op;
+    GtkWidget *img_run_an;
     
     GtkWidget *btn_run_back;
     GtkWidget *btn_run_reset;
@@ -531,20 +550,23 @@ int main(int argc, char *argv[])
     widgets->sw_light2 = GTK_WIDGET(gtk_builder_get_object(builder, "sw_light2"));
     widgets->sw_uv = GTK_WIDGET(gtk_builder_get_object(builder, "sw_uv"));
     
-    widgets->lbl_ahu = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_ahu"));
-    widgets->lbl_fan = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_fan"));
-    widgets->lbl_heater = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_heater"));
-    widgets->lbl_filter = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_filter"));
-    widgets->lbl_uv = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_uv"));
+    widgets->img_fan = GTK_WIDGET(gtk_builder_get_object(builder, "img_fan"));
+    widgets->img_heater = GTK_WIDGET(gtk_builder_get_object(builder, "img_heater"));
+    widgets->img_filter = GTK_WIDGET(gtk_builder_get_object(builder, "img_filter"));
+    widgets->img_uv = GTK_WIDGET(gtk_builder_get_object(builder, "img_uv"));
     
-    widgets->lbl_air4 = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_air4"));
-    widgets->lbl_air7 = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_air7"));
-    widgets->lbl_o2 = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_o2"));
-    widgets->lbl_vac = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_vac"));
-    widgets->lbl_co2 = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_co2"));
-    widgets->lbl_agss = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_agss"));
-    widgets->lbl_n2o = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_n2o"));
+    widgets->img_o2 = GTK_WIDGET(gtk_builder_get_object(builder, "img_o2"));
+    widgets->img_vac = GTK_WIDGET(gtk_builder_get_object(builder, "img_vac"));
+    widgets->img_co2 = GTK_WIDGET(gtk_builder_get_object(builder, "img_co2"));
+    widgets->img_agss = GTK_WIDGET(gtk_builder_get_object(builder, "img_agss"));
+    widgets->img_n2o = GTK_WIDGET(gtk_builder_get_object(builder, "img_n2o"));
     
+    widgets->img_light1 = GTK_WIDGET(gtk_builder_get_object(builder, "img_light1"));
+    widgets->img_light2 = GTK_WIDGET(gtk_builder_get_object(builder, "img_light2"));
+    widgets->img_lightuv = GTK_WIDGET(gtk_builder_get_object(builder, "img_lightuv"));
+    
+    widgets->img_temp = GTK_WIDGET(gtk_builder_get_object(builder, "img_temp"));
+    widgets->img_hu = GTK_WIDGET(gtk_builder_get_object(builder, "img_hu"));
     widgets->spin_temp = GTK_WIDGET(gtk_builder_get_object(builder, "spin_temp"));
     widgets->spin_hu = GTK_WIDGET(gtk_builder_get_object(builder, "spin_hu"));
     widgets->lbl_real_temp = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_real_temp"));
@@ -565,16 +587,58 @@ int main(int argc, char *argv[])
     widgets->lbl_time = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_time"));
     widgets->lbl_temp = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_temp"));
     widgets->lbl_hu = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_hu"));
+    widgets->lbl_pre = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_pre"));
     
-    widgets->btn_run_back = GTK_WIDGET(gtk_builder_get_object(builder, "btn_back"));
-    widgets->btn_run_reset = GTK_WIDGET(gtk_builder_get_object(builder, "btn_reset_2"));
-    widgets->btn_run_shut = GTK_WIDGET(gtk_builder_get_object(builder, "btn_shut_2"));
+    widgets->btn_run_back = GTK_WIDGET(gtk_builder_get_object(builder, "btn_run_back"));
+    widgets->btn_run_reset = GTK_WIDGET(gtk_builder_get_object(builder, "btn_run_reset"));
+    widgets->btn_run_shut = GTK_WIDGET(gtk_builder_get_object(builder, "btn_run_shut"));
+    //acquire button image
+    widgets->img_play = gtk_image_new_from_file("src/image/play.png");
+    widgets->img_set = gtk_image_new_from_file("src/image/set.png");
+    widgets->img_reset = gtk_image_new_from_file("src/image/reset.png");
+    widgets->img_shut = gtk_image_new_from_file("src/image/shut.png");
+    widgets->img_back = gtk_image_new_from_file("src/image/back.png");
+    widgets->img_reset1 = gtk_image_new_from_file("src/image/reset1.png");
+    widgets->img_shut1 = gtk_image_new_from_file("src/image/shut1.png");
+    widgets->img_run_op = gtk_image_new_from_file("src/image/play1.png");
+    widgets->img_run_an = gtk_image_new_from_file("src/image/play2.png");
     
     gtk_builder_connect_signals(builder, widgets);
     g_object_unref(builder);
     
     g_timeout_add_seconds(1, (GSourceFunc)display, widgets);
+    //set picture
+    //page 0
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_fan), "src/image/fanon.png");
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_heater), "src/image/heaton.png");
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_filter), "src/image/filton.png");
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_uv), "src/image/uvoff.png");
+
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_o2), "src/image/o2off.png");
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_vac), "src/image/vacoff.png");
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_co2), "src/image/co2off.png");
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_agss), "src/image/agssoff.png");
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_n2o), "src/image/n2off.png");
     
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_light1), "src/image/light.png");
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_light2), "src/image/light.png");
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_lightuv), "src/image/uv.png");
+    
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_temp), "src/image/temp.png");
+    gtk_image_set_from_file(GTK_IMAGE(widgets->img_hu), "src/image/humid.png");
+    
+    gtk_button_set_image(GTK_BUTTON(widgets->btn_run), GTK_WIDGET(widgets->img_play));
+    gtk_button_set_image(GTK_BUTTON(widgets->btn_set), GTK_WIDGET(widgets->img_set));
+    gtk_button_set_image(GTK_BUTTON(widgets->btn_reset), GTK_WIDGET(widgets->img_reset));
+    gtk_button_set_image(GTK_BUTTON(widgets->btn_shut), GTK_WIDGET(widgets->img_shut));
+    
+    //page 1
+    gtk_button_set_image(GTK_BUTTON(widgets->btn_run_back), GTK_WIDGET(widgets->img_back));
+    gtk_button_set_image(GTK_BUTTON(widgets->btn_run_reset), GTK_WIDGET(widgets->img_reset1));
+    gtk_button_set_image(GTK_BUTTON(widgets->btn_run_shut), GTK_WIDGET(widgets->img_shut1));
+    
+    gtk_button_set_image(GTK_BUTTON(widgets->btn_op_start), GTK_WIDGET(widgets->img_run_op));
+    gtk_button_set_image(GTK_BUTTON(widgets->btn_an_start), GTK_WIDGET(widgets->img_run_an));
     gtk_widget_show(window);
 
     gtk_main();

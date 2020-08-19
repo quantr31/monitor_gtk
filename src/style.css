@@ -4,93 +4,68 @@ window{
 
 /*page 1*/
 
-#lbl_hide1{
-	color: transparent;
-}
-#lbl_hide2{
-	color: transparent;
-}
-#lbl_hide3{
-	color: transparent;
-}
-#lbl_hide4{
-	color: transparent;
-}
-#lbl_hide5{
-	color: transparent;
-}
-#lbl_hide6{
-	color: transparent;
-}
-
 #lbl_op{
-	background-color: azure;
+	background-color: purple;
 	border-radius: 15px;
 	margin: 5px 5px 5px 5px;
 	border-top-style: solid;
 	border-top-width: 3px;
-	border-top-color: orange;
+	border-top-color: purple;
 	border-bottom-style: solid;
 	border-bottom-width: 3px;
-	border-bottom-color: orange; 
+	border-bottom-color: purple; 
 }
 
 #lbl_an{
-	background-color: azure;
+	background-color: purple;
 	border-radius: 15px;
 	margin: 5px 5px 5px 5px;
 	border-top-style: solid;
 	border-top-width: 3px;
-	border-top-color: orange;
+	border-top-color: purple;
 	border-bottom-style: solid;
 	border-bottom-width: 3px;
-	border-bottom-color: orange;
+	border-bottom-color: purple;
 }
-
-#grid_ahu{
-	background-color: azure;
-	border-radius: 15px;
+/*
+#grid_all{
+	background-color:azure;
+	border-radius: 50px;
 	margin: 20px 5px 5px 5px;
 	border-top-style: solid;
-	border-top-width: 3px;
-	border-top-color: orange;
-	
-}
+	border-top-width: 5px;
+	border-top-color: navy;
+}*/
 
-#grid_air{
+#grid_sw{
 	background-color: azure;
-	border-radius: 15px;
+	border-radius: 50px;
 	margin: 20px 5px 5px 5px;
 	border-top-style: solid;
-	border-top-width: 3px;
-	border-top-color: orange;
-	
-}
-
-#grid_light{
-	background-color: azure;
-	border-radius: 15px;
-	margin: 20px 5px 5px 5px;
-	border-top-style: solid;
-	border-top-width: 3px;
-	border-top-color: orange;
+	border-top-width: 5px;
+	border-top-color: navy;
 }
 
 #grid_temp{
 	background-color: azure;
-	border-radius: 15px;
+	border-radius: 50px;
 	margin: 20px 5px 5px 5px;
 	border-top-style: solid;
-	border-top-width: 3px;
-	border-top-color: orange; 
+	border-top-width: 5px;
+	border-top-color: navy; 
 }
+
+#temp_lbl{
+	font-weight: bold;
+}
+
 
 /*operation hours in*/
 #hrs_op_in{
-	color: navy;
-	font-size: 150px;
-	font-family: Arial Black;
-	font-weight: bolder;
+	color: #204A87;
+	font-size: 170px;
+	font-family: FreeSans;
+	font-weight: bold;
 	caret-color: transparent;
 	text-shadow: 1px 1px black;
 	font-stretch: extra-expanded; 
@@ -107,7 +82,7 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/downtri.png"); 
+	background-image: url("image/downl.png"); 
 	color: transparent; 
 }
 
@@ -115,15 +90,15 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/up_solid.png");
+	background-image: url("image/upl.png");
 	color: transparent;
 }
 
 /*operation minute in*/
 #mnt_op_in{
-	color: navy;
-	font-size: 150px;
-	/*font-family: Arial Black;*/
+	color: #204A87;
+	font-size: 170px;
+	font-family: FreeSans;
 	font-weight: bold;
 	caret-color: transparent;
 	text-shadow: 1px 1px black;
@@ -140,7 +115,7 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/downtri.png"); 
+	background-image: url("image/downl.png"); 
 	color: transparent; 
 }
 
@@ -148,15 +123,15 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/up_solid.png");
+	background-image: url("image/upl.png");
 	color: transparent;
 }
 
 /*operation second in*/
 #sec_op_in{
-	color: navy;
-	font-size: 150px;
-	font-family: Arial Black;
+	color: #204A87;
+	font-size: 170px;
+	font-family: FreeSans;
 	font-weight: bold;
 	caret-color: transparent;
 	text-shadow: 1px 1px black;
@@ -172,7 +147,7 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/downtri.png"); 
+	background-image: url("image/downl.png"); 
 	color: transparent; 
 }
 
@@ -180,15 +155,15 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/up_solid.png");
+	background-image: url("image/upl.png");
 	color: transparent;
 }
 
 /*anethesia minute in*/
 #mnt_an_in{
-	color: navy;
-	font-size: 150px;
-	font-family: Arial Black;
+	color: #204A87;
+	font-size: 170px;
+	font-family: FreeSans;
 	font-weight: bold;
 	caret-color: transparent;
 	text-shadow: 1px 1px black;
@@ -204,7 +179,7 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/downtri.png"); 
+	background-image: url("image/downl.png"); 
 	color: transparent; 
 }
 
@@ -212,15 +187,15 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/up_solid.png");
+	background-image: url("image/upl.png");
 	color: transparent;
 }
 
 /*anethesia hour in*/
 #hrs_an_in{
-	color: navy;
-	font-size: 150px;
-	font-family: Arial Black;
+	color: #204A87;
+	font-size: 170px;
+	font-family: FreeSans;
 	font-weight: bold;
 	caret-color: transparent;
 	text-shadow: 1px 1px black;
@@ -236,7 +211,7 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/downtri.png"); 
+	background-image: url("image/downl.png"); 
 	color: transparent; 
 }
 
@@ -244,15 +219,15 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/up_solid.png");
+	background-image: url("image/upl.png");
 	color: transparent;
 }
 
 /*anethesia second in*/
 #sec_an_in{
-	color: navy;
-	font-size: 150px;
-	font-family: Arial Black;
+	color: #204A87;
+	font-size: 170px;
+	font-family: FreeSans;
 	font-weight: bold;
 	caret-color: transparent;
 	text-shadow: 1px 1px black;
@@ -268,7 +243,7 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/downtri.png"); 
+	background-image: url("image/downl.png"); 
 	color: transparent; 
 }
 
@@ -276,16 +251,33 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/up_solid.png");
+	background-image: url("image/upl.png");
 	color: transparent;
 }
 
+switch{
+	background-image: linear-gradient(darkgreen, lightgreen);
+	/*background-color: teal;*/
+	border-radius: 50px;
+	margin: 10px 10px 10px 10px;
+}
+
+switch > slider{
+	/*background-image: linear-gradient(darkgreen, lightgreen);*/
+	background-color: teal;
+	border-radius: 50px;
+	
+}
+
+switch:checked{
+	background-image: linear-gradient(red, orange);
+}
 
 /*change temperature*/
 #spin_temp{
-	color: black;
-	font-size: 40px;
-	font-family: Arial Black;
+	color: #204A87;
+	font-size: 80px;
+	font-family: FreeSans;
 	font-weight: bold;
 	text-shadow: 1px 1px black;
 }
@@ -299,7 +291,7 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/down4.png");
+	background-image: url("image/down.png");
 	color: transparent;
 }
 
@@ -307,15 +299,16 @@ window{
 	padding: 4px;
 	border-color: azure; 
 	background-color: azure;
-	background-image: url("image/up4.png");
+	background-image: url("image/up.png");
 	color: transparent;
 }
 
+
 /*change humidity*/
 #spin_hu{
-	color: black;
-	font-size: 40px;
-	font-family: Arial Black; 
+	color: #204a87;
+	font-size: 80px;
+	font-family: FreeSans; 
 	font-weight: bold;
 	text-shadow: 1px 1px black;
 }
@@ -329,7 +322,7 @@ window{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/down4.png");
+	background-image: url("image/down.png");
 	color: transparent;
 }
 
@@ -337,20 +330,27 @@ window{
 	padding: 4px;
 	border-color: azure; 
 	background-color: azure;
-	background-image: url("image/up4.png");
+	background-image: url("image/up.png");
 	color: transparent;
 }
-button.toggle{
-	color: navy;
+
+button{
+	background-color: transparent;
+	border-color: transparent;
 }
 
 /*page 2*/
+#page1{
+	background-color: #204A87;
+}
 #run_op_hrs{
-	color: navy; 
+	font-family: Arial Black;
+	font-size: 200px; 
 }
 
 #run_op_mnt{
 	color: navy; 
+	font-size: 200px;
 }
 
 #run_op_sec{
@@ -368,7 +368,7 @@ button.toggle{
 #run_an_sec{
 	color: navy;
 }
-
+/*
 #lbl_date{
 	font-family: Arial Black;
 	color: #00A388;
@@ -424,4 +424,4 @@ button.toggle{
 
 #lbl_cur_press{
 	color: navy;
-}
+}*/
