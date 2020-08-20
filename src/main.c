@@ -61,7 +61,6 @@ typedef struct {
     GtkWidget *mnt_an_in;
     GtkWidget *sec_an_in;
     //button 
-    GtkWidget *btn_set;
     GtkWidget *btn_run;
     GtkWidget *btn_reset;
     GtkWidget *btn_shut;
@@ -94,7 +93,6 @@ typedef struct {
     
     //btn picture
     GtkWidget *img_play;
-    GtkWidget *img_set;
     GtkWidget *img_reset;
     GtkWidget *img_shut;
     
@@ -124,7 +122,6 @@ typedef struct {
     GtkWidget *img_run_an;
     
     GtkWidget *btn_run_back;
-    GtkWidget *btn_run_reset;
     GtkWidget *btn_run_shut;
     
     //clock var
@@ -348,8 +345,8 @@ void on_btn4_clicked(GtkButton *button, app_widgets *widgets)
 {
     
     }
-    
-void on_btn_set_clicked(GtkButton *button, app_widgets *widgets)
+
+void on_btn_run_clicked(GtkButton *button, app_widgets *widgets)
 {
     //set countdown timer for operation and anethesia
     widgets->op_hrs = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->hrs_op_in));
@@ -358,19 +355,33 @@ void on_btn_set_clicked(GtkButton *button, app_widgets *widgets)
     widgets->an_hrs = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->hrs_an_in));
     widgets->an_mnt = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->mnt_an_in));
     widgets->an_sec = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->sec_an_in));
+    
     //set temperature and humidity value
     widgets->adj_temp = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->spin_temp));
     widgets->adj_hu = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->spin_hu));
     //set count down clock next page
     g_timeout_add_seconds(1, (GSourceFunc)clock_timer, widgets);
     //g_timeout_add_seconds(1, (GSourceFunc)read_modbus_sensor, widgets);
-    
-    }
-
-void on_btn_run_clicked(GtkButton *button, app_widgets *widgets)
-{
     gtk_stack_set_visible_child_name(widgets->stack, "Run");
-	//format operation time
+	
+        //format operation time
+	gchar *op_hrs = g_strdup_printf("%02d", gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->hrs_op_in)));
+	gchar *op_mnt = g_strdup_printf("%02d", gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->mnt_op_in)));
+	gchar *op_sec = g_strdup_printf("%02d", gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->sec_op_in)));
+	//format anethesia time
+	gchar *an_hrs = g_strdup_printf("%02d", gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->hrs_an_in)));
+	gchar *an_mnt = g_strdup_printf("%02d", gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->mnt_an_in)));
+	gchar *an_sec = g_strdup_printf("%02d", gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->sec_an_in)));
+	//set operation time in run display
+	gtk_label_set_text(GTK_LABEL(widgets->lbl_op_hrs), op_hrs);
+	gtk_label_set_text(GTK_LABEL(widgets->lbl_op_mnt), op_mnt);
+	gtk_label_set_text(GTK_LABEL(widgets->lbl_op_sec), op_sec);
+	//set anethesia time in run display 
+	gtk_label_set_text(GTK_LABEL(widgets->lbl_an_hrs), an_hrs);
+	gtk_label_set_text(GTK_LABEL(widgets->lbl_an_mnt), an_mnt);
+	gtk_label_set_text(GTK_LABEL(widgets->lbl_an_sec), an_sec);
+    
+/*    //format operation time
 	gchar *op_hrs = g_strdup_printf("%02d", widgets->op_hrs);
 	gchar *op_mnt = g_strdup_printf("%02d", widgets->op_mnt);
 	gchar *op_sec = g_strdup_printf("%02d", widgets->op_sec);
@@ -386,6 +397,7 @@ void on_btn_run_clicked(GtkButton *button, app_widgets *widgets)
 	gtk_label_set_text(GTK_LABEL(widgets->lbl_an_hrs), an_hrs);
 	gtk_label_set_text(GTK_LABEL(widgets->lbl_an_mnt), an_mnt);
 	gtk_label_set_text(GTK_LABEL(widgets->lbl_an_sec), an_sec);
+    * */
 	//free variable
 	g_free(op_hrs);
 	g_free(op_mnt);
@@ -541,7 +553,7 @@ int main(int argc, char *argv[])
     widgets->mnt_an_in = GTK_WIDGET(gtk_builder_get_object(builder, "mnt_an_in"));
     widgets->sec_an_in = GTK_WIDGET(gtk_builder_get_object(builder, "sec_an_in"));
     
-    widgets->btn_set = GTK_WIDGET(gtk_builder_get_object(builder, "btn_set"));
+    //widgets->btn_set = GTK_WIDGET(gtk_builder_get_object(builder, "btn_set"));
     widgets->btn_reset = GTK_WIDGET(gtk_builder_get_object(builder, "btn_reset"));
     widgets->btn_shut = GTK_WIDGET(gtk_builder_get_object(builder, "btn_shut"));
     widgets->btn_run = GTK_WIDGET(gtk_builder_get_object(builder, "btn_run"));
@@ -590,15 +602,12 @@ int main(int argc, char *argv[])
     widgets->lbl_pre = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_pre"));
     
     widgets->btn_run_back = GTK_WIDGET(gtk_builder_get_object(builder, "btn_run_back"));
-    widgets->btn_run_reset = GTK_WIDGET(gtk_builder_get_object(builder, "btn_run_reset"));
     widgets->btn_run_shut = GTK_WIDGET(gtk_builder_get_object(builder, "btn_run_shut"));
     //acquire button image
     widgets->img_play = gtk_image_new_from_file("src/image/play.png");
-    widgets->img_set = gtk_image_new_from_file("src/image/set.png");
     widgets->img_reset = gtk_image_new_from_file("src/image/reset.png");
     widgets->img_shut = gtk_image_new_from_file("src/image/shut.png");
     widgets->img_back = gtk_image_new_from_file("src/image/back.png");
-    widgets->img_reset1 = gtk_image_new_from_file("src/image/reset1.png");
     widgets->img_shut1 = gtk_image_new_from_file("src/image/shut1.png");
     widgets->img_run_op = gtk_image_new_from_file("src/image/play1.png");
     widgets->img_run_an = gtk_image_new_from_file("src/image/play2.png");
@@ -628,13 +637,11 @@ int main(int argc, char *argv[])
     gtk_image_set_from_file(GTK_IMAGE(widgets->img_hu), "src/image/humid.png");
     
     gtk_button_set_image(GTK_BUTTON(widgets->btn_run), GTK_WIDGET(widgets->img_play));
-    gtk_button_set_image(GTK_BUTTON(widgets->btn_set), GTK_WIDGET(widgets->img_set));
     gtk_button_set_image(GTK_BUTTON(widgets->btn_reset), GTK_WIDGET(widgets->img_reset));
     gtk_button_set_image(GTK_BUTTON(widgets->btn_shut), GTK_WIDGET(widgets->img_shut));
     
     //page 1
     gtk_button_set_image(GTK_BUTTON(widgets->btn_run_back), GTK_WIDGET(widgets->img_back));
-    gtk_button_set_image(GTK_BUTTON(widgets->btn_run_reset), GTK_WIDGET(widgets->img_reset1));
     gtk_button_set_image(GTK_BUTTON(widgets->btn_run_shut), GTK_WIDGET(widgets->img_shut1));
     
     gtk_button_set_image(GTK_BUTTON(widgets->btn_op_start), GTK_WIDGET(widgets->img_run_op));
@@ -654,6 +661,26 @@ void on_window_main_destroy()
 {
     gtk_main_quit();
 }
+
+/*    
+void on_btn_set_clicked(GtkButton *button, app_widgets *widgets)
+{
+    //set countdown timer for operation and anethesia
+    widgets->op_hrs = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->hrs_op_in));
+    widgets->op_mnt = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->mnt_op_in));
+    widgets->op_sec = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->sec_op_in));
+    widgets->an_hrs = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->hrs_an_in));
+    widgets->an_mnt = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->mnt_an_in));
+    widgets->an_sec = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->sec_an_in));
+    //set temperature and humidity value
+    widgets->adj_temp = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->spin_temp));
+    widgets->adj_hu = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widgets->spin_hu));
+    //set count down clock next page
+    g_timeout_add_seconds(1, (GSourceFunc)clock_timer, widgets);
+    //g_timeout_add_seconds(1, (GSourceFunc)read_modbus_sensor, widgets);
+    
+    }
+*/
 
 /*void on_btn_count_clicked(GtkButton *button, app_widgets *widgets)
 {

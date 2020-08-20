@@ -27,15 +27,6 @@ window{
 	border-bottom-width: 3px;
 	border-bottom-color: purple;
 }
-/*
-#grid_all{
-	background-color:azure;
-	border-radius: 50px;
-	margin: 20px 5px 5px 5px;
-	border-top-style: solid;
-	border-top-width: 5px;
-	border-top-color: navy;
-}*/
 
 #grid_sw{
 	background-color: azure;
@@ -55,10 +46,12 @@ window{
 	border-top-color: navy; 
 }
 
-#temp_lbl{
-	font-weight: bold;
+#grid_btn{
+	border-radius: 50px;
+	border-bottom-style: solid;
+	border-bottom-width: 5px;
+	border-bottom-color: navy;
 }
-
 
 /*operation hours in*/
 #hrs_op_in{
@@ -279,6 +272,7 @@ switch:checked{
 	font-size: 80px;
 	font-family: FreeSans;
 	font-weight: bold;
+	caret-color: transparent;
 	text-shadow: 1px 1px black;
 }
 
@@ -291,7 +285,7 @@ switch:checked{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/down.png");
+	background-image: url("image/down1.png");
 	color: transparent;
 }
 
@@ -299,7 +293,7 @@ switch:checked{
 	padding: 4px;
 	border-color: azure; 
 	background-color: azure;
-	background-image: url("image/up.png");
+	background-image: url("image/up1.png");
 	color: transparent;
 }
 
@@ -310,6 +304,7 @@ switch:checked{
 	font-size: 80px;
 	font-family: FreeSans; 
 	font-weight: bold;
+	caret-color: transparent;
 	text-shadow: 1px 1px black;
 }
 
@@ -322,7 +317,7 @@ switch:checked{
 	padding: 4px;
 	border-color: azure;
 	background-color: azure;
-	background-image: url("image/down.png");
+	background-image: url("image/down1.png");
 	color: transparent;
 }
 
@@ -330,7 +325,7 @@ switch:checked{
 	padding: 4px;
 	border-color: azure; 
 	background-color: azure;
-	background-image: url("image/up.png");
+	background-image: url("image/up1.png");
 	color: transparent;
 }
 
@@ -341,87 +336,44 @@ button{
 
 /*page 2*/
 #page1{
-	background-color: #204A87;
+	background-color: #FFFAF0;
+}
+
+#op_run_grid{
+	background-color: #01A263;
+	border-radius: 80px;
+}
+#an_run_grid{
+	background-color: #01A263;
+	border-radius: 80px
 }
 #run_op_hrs{
-	font-family: Arial Black;
-	font-size: 200px; 
+	font-weight: bold;
 }
 
 #run_op_mnt{
-	color: navy; 
+	color: white; 
 	font-size: 200px;
 }
 
 #run_op_sec{
-	color: navy; 
+	font-size: 200px;
 }
 
 #run_an_hrs{
-	color: navy;
+	font-size: 200px;
 }
 
 #run_an_mnt{
-	color: navy; 
+	font-size: 200px;
 }
 
 #run_an_sec{
-	color: navy;
-}
-/*
-#lbl_date{
-	font-family: Arial Black;
-	color: #00A388;
-	font-size: 50px;
-	font-weight: bold;
+	font-size: 200px;
 }
 
-#lbl_time{
-	font-family: Arial Black;
-	color: #00A388;
-	font-size: 50px;
-	font-weight: bold;
+#grid_dt{
+	border-radius: 30px;
+	border-style: solid;
+	background-color: teal; 
 }
-
-#lbl_cur_date{
-	color: navy;
-}
-
-#lbl_cur_time{
-	color: navy;
-}
-
-#lbl_temp{
-	font-family: arial;
-	color: #00A388;
-	font-size: 50px;
-	font-weight: bold;
-
-}
-
-#lbl_hu{
-	font-family: arial;
-	color: #00A388;
-	font-size: 50px;
-	font-weight: bold;
-
-}
-
-#lbl_press{
-	font-family: arial;
-	color: #00A388;
-	font-size: 50px;
-	font-weight: bold;
-}
-
-#lbl_cur_temp{
-	color: navy;
-}
-
-#lbl_cur_hu{
-	color: navy;
-}
-
-#lbl_cur_press{
-	color: navy;
-}*/
