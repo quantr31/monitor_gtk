@@ -15,23 +15,20 @@ PTHREAD=-pthread
 CCFLAGS=$(DEBUG) $(OPT) $(WARN) $(PTHREAD) -pipe
 CCFLAGS+=`pkg-config --cflags libmodbus`
 
-GTKLIB=`pkg-config --cflags --libs gtk+-3.0`
+GTKLIB=`pkg-config --cflags --libs gtk+-3.0` `pkg-config --cflags --libs x11`
 
 # linker
 LD=gcc
 LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic
 LDFLAGS+=`pkg-config --libs libmodbus`
 
-OBJS=    main.o gz_clk.o
+OBJS=   main.o 
 
 all: $(OBJS)
 	$(LD) -o $(TARGET) $(OBJS) -lbcm2835 -lrt $(LDFLAGS)
     
-main.o: src/main.c
+main.o: src/main.c 
 	$(CC) -c $(CCFLAGS) src/main.c $(GTKLIB) -o main.o
-
-gz_clk.o: src/gz_clk.c src/gz_clk.h
-	gcc -c src/gz_clk.c
     
 clean:
 	rm -f *.o $(TARGET)
